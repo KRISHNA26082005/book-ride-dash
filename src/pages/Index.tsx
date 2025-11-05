@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Bus, Calendar, MapPin, Shield } from 'lucide-react';
+import { Bus, Calendar, MapPin, Shield, Users } from 'lucide-react';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -42,10 +42,11 @@ const Index = () => {
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button size="lg" variant="secondary" onClick={() => navigate('/auth')}>
-              Get Started
+              User Login
             </Button>
-            <Button size="lg" variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20" onClick={() => navigate('/auth')}>
-              Sign In
+            <Button size="lg" className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => navigate('/admin/auth')}>
+              <Shield className="h-4 w-4 mr-2" />
+              Admin Login
             </Button>
           </div>
         </div>
