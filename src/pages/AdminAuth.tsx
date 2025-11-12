@@ -7,9 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 import { Shield } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminAuth() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
@@ -35,6 +37,27 @@ export default function AdminAuth() {
     setIsLoading(false);
   };
 
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('reset-email') as string;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/admin/auth`,
+    });
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Password reset email sent! Check your inbox.');
+      setShowResetPassword(false);
+    }
+
+    setIsLoading(false);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
       <Card className="w-full max-w-md">
@@ -48,30 +71,65 @@ export default function AdminAuth() {
           <CardDescription>Bus Management System - Admin Access Only</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="admin-email">Admin Email</Label>
-              <Input
-                id="admin-email"
-                name="email"
-                type="email"
-                placeholder="admin@example.com"
-                required
-              />
+          {showResetPassword ? (
+            <div className="space-y-4">
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowResetPassword(false)}
+                className="mb-2"
+              >
+                ← Back to Sign In
+              </Button>
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Admin Email</Label>
+                  <Input
+                    id="reset-email"
+                    name="reset-email"
+                    type="email"
+                    placeholder="admin@example.com"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Sending...' : 'Send Reset Link'}
+                </Button>
+              </form>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="admin-password">Password</Label>
-              <Input
-                id="admin-password"
-                name="password"
-                type="password"
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign In as Admin'}
-            </Button>
-          </form>
+          ) : (
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="admin-email">Admin Email</Label>
+                <Input
+                  id="admin-email"
+                  name="email"
+                  type="email"
+                  placeholder="admin@example.com"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="admin-password">Password</Label>
+                <Input
+                  id="admin-password"
+                  name="password"
+                  type="password"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Signing in...' : 'Sign In as Admin'}
+              </Button>
+              <Button 
+                type="button" 
+                variant="link" 
+                className="w-full" 
+                onClick={() => setShowResetPassword(true)}
+              >
+                Forgot Password?
+              </Button>
+            </form>
+          )}
 
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground">
